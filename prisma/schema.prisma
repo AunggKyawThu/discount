@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model Customer {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch Branch @relation(fields:[branchId], references:[id])
+  branchId String
+
+  name String
+  email String?
+  receipts Receipt[]
+
+  @@index([branchId])
+}
+
+model Receipt {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch Branch @relation(fields:[branchId], references:[id])
+  branchId String
+
+  receiptNumber Int @id @default(autoincrement())
+  customer Customer @relation(fields:[customerId], references:[id])
+  customerId String
+
+  @@index([customerId])
+  @@index([branchId])
+}
+
+model Industry {
+  type String @id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branches Branch[]
+  products Product[]
+
+  @@index([type])
+}
+
+model Branch {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  location String
+  industry Industry @relation(fields:[industryId], references:[type])
+  industryId String
+ 
+  warehouses WareHouse[]
+  customers Customer[]
+  receipts Receipt[]
+  
+  @@index([industryId])
+}
+
+model WareHouse {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  branch Branch @relation(fields:[branchId], references:[id])
+  branchId String
+  shelf Shelf[]
+
+  @@index(branchId)
+}
+
+model Shelf {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name String
+  warehouse WareHouse @relation(fields:[warehouseId], references:[id])
+  warehouseId String
+
+  productItems ProductItem[]
+
+  @@index(warehouseId)
+}
+
+model Product {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  industry Industry @relation(fields:[industryId], references:[type])
+  industryId String
+  
+  code String @id @unique @db.VarChar(13)
+  brand String 
+  description String
+  imageSrc String
+  salePrice Float @default(0.0)
+  costPrice Float @default(0.0)
+  unit String
+  packing String
+  status Boolean
+
+  productItems ProductItem[]
+
+  @@index(code)
+  @@index(description)
+  @@index(industryId)
+}
+
+model ProductItem {
+  id String @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields:[productId], references:[code])
+  productId String
+
+  quantity Int
+
+  shelf Shelf @relation(fields:[shelfId], references:[id])
+  shelfId String 
+
+  @@index([productId])
+  @@index([shelfId])
+}
+
+model Receipt {
+  
+}
